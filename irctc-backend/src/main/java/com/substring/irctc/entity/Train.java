@@ -1,9 +1,7 @@
 package com.substring.irctc.entity;
 
 import com.substring.irctc.annotations.ValidPassword;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
@@ -22,9 +20,12 @@ public class Train {
 
     private String routeName;
 
+    @OneToOne(cascade =  CascadeType.ALL)
+    private TrainImage trainImage;
+
+
+
     //parameterized constructor
-
-
     public Train(String trainNo, String name, String routeName) {
         this.trainNo = trainNo;
         this.name = name;
@@ -33,6 +34,14 @@ public class Train {
 
     public Train(){
 
+    }
+
+    public TrainImage getTrainImage() {
+        return trainImage;
+    }
+
+    public void setTrainImage(TrainImage trainImage) {
+        this.trainImage = trainImage;
     }
 
     public @Pattern(regexp = "^[A-Za-z][A-Za-z -]* [A-Za-z]$\n", message = "Invalid train number. Only alphabets and hyphones are allowed") String getName() {

@@ -1,13 +1,17 @@
 package com.substring.irctc.controllers;
 
+import com.substring.irctc.dto.ErrorResponse;
 import com.substring.irctc.dto.PagedResponse;
 import com.substring.irctc.dto.TrainDTO;
+import com.substring.irctc.dto.TrainImageResponse;
 import com.substring.irctc.entity.ImageMetaData;
 import com.substring.irctc.entity.Train;
 import com.substring.irctc.service.FileUploadService;
+import com.substring.irctc.service.TrainImageService;
 import com.substring.irctc.service.TrainService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,18 +20,27 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.util.List;
 
 @RestController //Controller + ResponseBody = RestController
 @RequestMapping("trains")
 public class TrainController {
 
-    @Autowired
+
     private TrainService trainService;
 
-    @Autowired
+
     private FileUploadService fileUploadService;
 
+
+
+    private TrainImageService trainImageService;
+
+    public TrainController(TrainService trainService, TrainImageService trainImageService) {
+        this.trainService = trainService;
+        this.trainImageService = trainImageService;
+    }
 
     //creating api to upload file
     @PostMapping("/photo")
@@ -136,6 +149,41 @@ public class TrainController {
 //        ErrorResponse response = new ErrorResponse("Train not found!!" + exception.getMessage(), "404", false);
 //        return response;
 //}
+
+
+
+    @PostMapping("/upload/{trainNo")
+    public ResponseEntity<?> uploadTrainImage(
+            @PathVariable String trainNo,
+            @RequestParam("image")MultipartFile image
+    ) throws IOException {
+
+        String contentType = image.getContentType();
+        System.out.println(contentType);
+
+        if(contentType.toLowerCase().startsWith("image")) {
+
+            return new ResponseEntity<>(trainImageService.upload(image, trainNo), HttpStatus.CREATED);
+        }
+        else{
+            return new ResponseEntity<>(new ErrorResponse("image not uploaded", "403", false), HttpStatus.BAD_REQUEST);
+        }
+
+
+
+    }
+
+    //api to serve
+
+    public ResponseEntity<Resource> serveTrainImage(
+            @PathVariable("trainId") String trainId
+    ) throws MalformedURLException {
+        Resource resource = trainImageService.loadImageByTrainNo(trainId);
+
+        return ResponseEntity.ok()
+                .contentType()
+                .body(resource);
+    }
 }
 
 
