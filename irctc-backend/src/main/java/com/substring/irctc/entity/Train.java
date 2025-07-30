@@ -5,66 +5,51 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.util.List;
+
 @Entity
 @Table(name="trains")
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class Train {
     //so what are the properties of train?
 
     @Id
-    private String trainNo;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String number;
 
      private String name;
 
-//    @ValidPassword
-//    private int coches;
+    private Integer totalDistance;
 
-    private String routeName;
 
-    @OneToOne(cascade =  CascadeType.ALL)
+    @ManyToOne //Many Train has One sourceStation
+    @JoinColumn(name="source_station_id")
+    private Station sourceStation;
+
+
+    @ManyToOne
+    @JoinColumn(name="destination_station_id")
+    private Station destinationStation;
+
+    @OneToOne(cascade =  CascadeType.ALL, orphanRemoval = true)
     private TrainImage trainImage;
 
+    @OneToMany(mappedBy = "train")
+    private List<TrainRoute> routes;
+
+    @OneToMany(mappedBy = "train")
+    private List<TrainSchedule> schedules;
 
 
-    //parameterized constructor
-    public Train(String trainNo, String name, String routeName) {
-        this.trainNo = trainNo;
-        this.name = name;
-        this.routeName = routeName;
-    }
 
-    public Train(){
-
-    }
-
-    public TrainImage getTrainImage() {
-        return trainImage;
-    }
-
-    public void setTrainImage(TrainImage trainImage) {
-        this.trainImage = trainImage;
-    }
-
-    public @Pattern(regexp = "^[A-Za-z][A-Za-z -]* [A-Za-z]$\n", message = "Invalid train number. Only alphabets and hyphones are allowed") String getName() {
-        return name;
-    }
-
-    public void setName(@Pattern(regexp = "^[A-Za-z][A-Za-z -]* [A-Za-z]$\n", message = "Invalid train number. Only alphabets and hyphones are allowed") String name) {
-        this.name = name;
-    }
-
-    public String getRouteName() {
-        return routeName;
-    }
-
-    public void setRouteName(String routeName) {
-        this.routeName = routeName;
-    }
-
-    public @NotEmpty(message = "train number is required!!") @Size(min = 3, max = 20, message = "Invalid length of train no.") @Pattern(regexp = "^\\d+$", message = "Invalid no, train no contains only numbers") String getTrainNo() {
-        return trainNo;
-    }
-
-    public void setTrainNo(@NotEmpty(message = "train number is required!!") @Size(min = 3, max = 20, message = "Invalid length of train no.") @Pattern(regexp = "^\\d+$", message = "Invalid no, train no contains only numbers") String trainNo) {
-        this.trainNo = trainNo;
-    }
 }
